@@ -1,11 +1,11 @@
-# Original mod input
+# Original mobile mod input
 
-Upload the supplied file here with this exact name:
+Upload the exact file supplied in the ChatGPT conversation:
 
-`LyricsFlow-beta-2.2+1.21.4.jar`
+`LyricsZymu-Mobile-1.3_1.21.11.jar`
 
-The GitHub Actions workflow expects:
+Destination:
 
-`original/LyricsFlow-beta-2.2+1.21.4.jar`
+`original/LyricsZymu-Mobile-1.3_1.21.11.jar`
 
-The JAR is not committed by this placeholder. Once it is uploaded, run **Actions → Prepare LyricsFlow decompilation → Run workflow**. The workflow will publish a decompiled inspection artifact; it does not build the final Minecraft 1.20.1 mod.
+The JAR is not in this repository yet. The workflow cannot run until the upload is committed.
