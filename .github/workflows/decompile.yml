@@ -1,4 +1,4 @@
-name: Prepare LyricsFlow decompilation
+name: Prepare Lyrics Zymu source inspection
 
 on:
   workflow_dispatch:
@@ -19,33 +19,32 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Check original mod JAR
+      - name: Verify original JAR exists
         run: |
-          test -f original/LyricsFlow-beta-2.2+1.21.4.jar || {
-            echo "::error::Missing original/LyricsFlow-beta-2.2+1.21.4.jar. Upload the original mod JAR to that path first."
-            exit 1
-          }
+          test -f "original/LyricsZymu-Mobile-1.3_1.21.11.jar"
+          jar tf "original/LyricsZymu-Mobile-1.3_1.21.11.jar" > jar-contents.txt
+          grep -q '^fabric.mod.json$' jar-contents.txt
+
+      - name: Read metadata and class versions
+        run: |
+          mkdir -p inspection/metadata
+          unzip -p "original/LyricsZymu-Mobile-1.3_1.21.11.jar" fabric.mod.json > inspection/metadata/fabric.mod.json
+          unzip -p "original/LyricsZymu-Mobile-1.3_1.21.11.jar" lyricszymu.mixins.json > inspection/metadata/lyricszymu.mixins.json
+          cp jar-contents.txt inspection/metadata/
+          javap -verbose -classpath "original/LyricsZymu-Mobile-1.3_1.21.11.jar" Dev.lyricszymu.LyricsZymuClient | grep -E 'major version|minor version' > inspection/metadata/class-version.txt
 
       - name: Download CFR decompiler
-        run: |
-          curl -L --fail --retry 3 \
-            https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar \
-            -o cfr.jar
+        run: curl --fail --location --retry 3 --output cfr.jar https://repo.maven.apache.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
 
-      - name: Decompile mod
+      - name: Decompile original mod
         run: |
-          mkdir -p decompiled
-          java -jar cfr.jar "original/LyricsFlow-beta-2.2+1.21.4.jar" --outputdir decompiled
-
-      - name: Preserve Fabric metadata and mixin configs
-        run: |
-          mkdir -p metadata
-          unzip -j "original/LyricsFlow-beta-2.2+1.21.4.jar" 'fabric.mod.json' '*.mixins.json' -d metadata || true
+          mkdir -p inspection/decompiled
+          java -jar cfr.jar "original/LyricsZymu-Mobile-1.3_1.21.11.jar" --outputdir inspection/decompiled --silent true
 
       - name: Upload inspection artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lyricsflow-decompiled-inspection
-          path: |
-            decompiled/
-            metadata/
+          name: lyricszymu-original-decompiled
+          path: inspection/
+          if-no-files-found: error
+          retention-days: 14
